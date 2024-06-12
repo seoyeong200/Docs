@@ -38,6 +38,17 @@
 ![스크린샷 2024-06-13 오전 7 24 19](https://github.com/brickstudy/Docs/assets/171632447/02b6d58f-7e03-4a22-8089-6376b6f2bdd9)
 
 
-5/ 작성완료 후 
+5/ 작성완료 후 Commit
+
+- Commit message는 본인이 작업한 내용
+- (6월 기준)은 main branch에 바로 merge
+  - 인원이 많아지면 문제가 생길 수 있기 때문에 7월 부터는 가이드 변경 예정!!
+ 
+
+![스크린샷 2024-06-13 오전 7 31 47](https://github.com/brickstudy/Docs/assets/171632447/4239b4ca-569c-4983-adc9-269d34a07483)
+
+6/ gitbook 들어간 후 내용 확인
+
+- gitbook 동기화의 경우 1~3분 정도 딜레이 있음
 
 
