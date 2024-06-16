@@ -1,0 +1,70 @@
+
+# spark local 작업 환경 구축
+
+## Introduction
+
+1. 개발 환경 분리 <br>
+용도에 따라 A. Local mode, B. Cluster mode 로 개발 환경을 분리했습니다.
+
+2. A/B 환경에 aws 기본 설정을 구성해두었습니다.
+
+3. further - 논의가 필요한 스펙
+
+
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Background](#background)
+3. [Main Content](#main-content)
+    1. [Subsection 1](#subsection-1)
+    2. [Subsection 2](#subsection-2)
+
+<br>
+
+## Background
+
+-
+
+
+## Main Content
+
+<br>
+
+### 개발 환경 분리
+
+A. (Local mode) Notebook에서 스파크를 이용한 데이터 처리 코드를 interactive하게 실행하고 실습하기 위한 환경<br>
+B. (Cluster mode - standalone) spark-submit으로 스크립트 제출하여 spark job을 실행시키는 환경
+
+환경 분리 context
+
+[기존 컴포즈 파일](https://github.com/brickstudy/infra-docs/blob/main/spark/docker-compose.yaml) 의 경우 master, worker spark-cluster와 주피터 컨테이너를 띄워서 주피터 상에서 spark-cluster 내의 스파크 엔진을 standalone cluster mode로 사용하게끔 설정이 되어있습니다. 하지만 jupyterlab 컨테이너 자체에도 spark 가 설치되어있기 때문에, 노트북으로 실습하는 용도로 환경을 구성하는데에 spark-master, spark-worker도 함께 빌드하는게 불필요하다고 판단했습니다. 따라서 단순 pyspark 코드가 실행되는지 실습할때에는 jupyterlab 컨테이너만 띄워 local mode(no cluster manager) 로 학습 및 개발이 진행되고, 클러스터의 경우 별도로(docker-compose_prod_test.yml) 띄울 수 있게끔 분리해두면 작업이 더 가벼워질 것이라 생각했습니다. (지금와서 생각해보니 이걸 분리한게 더 불필요했을수 있겠다는 생각이 드네요)
+
+A. jupyter( + spark)
+- 단순 간단하게 스파크 코드 실행해볼 수 있는 환경
+- Dockerfile, docker-compose.yml
+- setup command : `docker-compose up -d`
+
+B. spark master, spark worker, spark history server
+- cluster에 잡을 제출하고 DAG, task schedule 등 확인할 수 있는 환경
+- Dockerfile_prod_test, docker-compose_prod_test.yml
+- setup command : `docker-compose -f docker-compose_prod_test.yml up`
+
+<br>
+
+### AWS configuration
+
+aws cli를 컨테이너 안에 설치하고, spark 와 aws s3를 연결하여 데이터를 읽어오는걸 정상적으로 테스트했습니다.
+
+aws cli를 사용하여 aws 클라우드 서비스를 사용하기 위해선 각 profile마다  AWS Access Key ID, AWS Secret Access Key, Default region name, Default output format (optional)를 명시해주어야하기 때문에, 컨테이너 베이스 os unix계열 기본 cli가 refer하고있는 경로 ~/.aws 하에 config, credential 파일로 키 값을 넣어주었습니다. (현재 개인 계정으로 테스트) aws cli는 pip 통해서 설치됩니다. (컨테이너 내부 쉘에서 `aws --version` `aws s3 ls` 등의 커맨드 정상 작동 확인 완료)
+
+spark session에 aws s3 연결 관련 기본 구성의 경우 conf/spark-defaults.conf 파일로 관리 가능하게끔 설정했습니다. 다만 aws connector로 사용되는 hadoop-aws Jar, aws-java-sdk-bundle Jar 파일의 경우 스파크 세션 시마다 maven 통해서 받아오게 설정 시 시간이 오래걸려 다운받아서 이미지 자체 jar 경로에 위치시켰습니다.
+
+<br>
+
+### Etcs, Further
+
+- 주피터 extension) 작업 환경 설정 가능하게끔 필요한 최소 환경 구성은 해두었습니다. (원하는 extension찾아서 설치 가능) 주의할 점은 컨테이너 재실행할때마다 다시 설치해야할 것입니다.
+
+- 더 필요한 기본 스펙 논의 필요
+    - 기본 DB 스팩(spark data read/write시 해당 db connecting confirguration setup 필요)
+    - airflow 연결을 위한 환경 구성 필요한지 조사 필요
